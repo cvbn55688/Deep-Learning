@@ -10,10 +10,10 @@ def mse_function(outputs, expects):
 
 def mse_derivative(outputs, expects):
     output_num = len(outputs)
-    gradients = []
+    error_changes = []
     for i in range(output_num):
-        gradients.append((2 / output_num) * (outputs[i] - expects[i]))
-    return gradients
+        error_changes.append((2 / output_num) * (outputs[i] - expects[i]))
+    return error_changes
 
 def binary_cross_entropy_function(outputs, expects):
     output_num = len(outputs)
@@ -21,6 +21,13 @@ def binary_cross_entropy_function(outputs, expects):
     for i in range(output_num):
         error_sum += expects[i] * math.log(outputs[i]) + (1 - expects[i]) * math.log(1 - outputs[i])
     return -error_sum
+
+def binary_cross_entropy_derivative(outputs, expects):
+    output_num = len(outputs)
+    error_changes = []
+    for i in range(output_num):
+        error_changes.append(-(expects[i] / outputs[i]) + (1 - expects[i]) / (1 - outputs[i]))
+    return error_changes
 
 def categorical_cross_entropy_function(outputs, expects):
     output_num = len(outputs)
@@ -107,9 +114,9 @@ class Network:
             index = len(self.activations) - i
             original_input = self.layer_value_records[index]
             last_inputs = self.layer_value_records[index - 1].copy()
-            last_inputs.append(1) # for adding bais
+            last_inputs.append(1) # for adding bias
 
-            error_graidents = self.activation_derivative_functions(original_input, error_changes, activation)
+            error_gradients = self.activation_derivative_functions(original_input, error_changes, activation)
             error_changes = []
             # This extra index is for layer_value_records which contain the input (x1, x2, ...)
             # So we need to index - 1
@@ -118,9 +125,9 @@ class Network:
                 for j in range(len(original_gradients)):
                     # original_gradients[j] can directly change the self.all_weights_gradients
                     origin_weights = original_gradients[j]
-                    new_error_change += origin_weights * error_graidents[j]
-                    original_gradients[j] = last_inputs[input_index] * error_graidents[j]
-                # To pervent bais append error_changes
+                    new_error_change += origin_weights * error_gradients[j]
+                    original_gradients[j] = last_inputs[input_index] * error_gradients[j]
+                # To prevent bias append error_changes
                 if(input_index < len(last_inputs) -1 ): error_changes.append(new_error_change)
 
     def zero_grad(self, learning_rate):
@@ -147,7 +154,7 @@ for i in range(1000):
             {f"layer{i}: {list(zip(*layer))}"} for i, layer in enumerate(updated_weights)
         ]
         print('------ task 1 ------')
-        print("NOTICE: My single layer contain bais's weight.\n")
+        print("NOTICE: My single layer contain bias's weight.\n")
         print(transposed_with_names)
 
 print('------ task 2 ------')
@@ -161,16 +168,16 @@ network2 = Network([[[0.5, 0.6], [0.2, -0.6], [0.3, 0.25]], [[0.8], [0.4], [-0.5
 
 for i in range(1000):
     output = (network2.forward([0.75, 1.25]))
-    error_changes = mse_derivative(output, expects)
+    error_changes = binary_cross_entropy_derivative(output, expects)
     network2.backward(error_changes)
     updated_weights = network2.zero_grad(learning_rate)
     if(i == 0): 
         print('------ task 1 ------')
-        print("NOTICE: My single layer will contain bais's weight.\n")
+        print("NOTICE: My single layer will contain bias's weight.\n")
         transposed_with_names = [
             {f"layer{i}: {list(zip(*layer))}"} for i, layer in enumerate(updated_weights)
         ]
         print(transposed_with_names)
 
 print('------ task 2 ------')
-print(f'Total Loss: {mse_function(network2.forward([0.75, 1.25]), expects)}')
+print(f'Total Loss: {binary_cross_entropy_function(network2.forward([0.75, 1.25]), expects)}')
