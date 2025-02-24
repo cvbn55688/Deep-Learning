@@ -82,14 +82,14 @@ class Network:
         self.gradients = []
 
         # 從最後一層開始反向傳播
-        for i in reversed(range(len(self.layers))):
-            layer = self.layers[i]
+        for reversed_index in reversed(range(len(self.layers))):
+            layer = self.layers[reversed_index]
             activation = layer['activation']
-            original_output = self.layer_outputs[i + 1]
-            prev_output = self.layer_outputs[i]
+            original_output = self.layer_outputs[reversed_index + 1]
+            prev_output = self.layer_outputs[reversed_index]
 
 
-            # 計算 activation 導數
+            # 計算 activation
             activation_derivative = self.activation_derivative_functions(original_output, activation)
             layer_loss = [a * b for a, b in zip(current_loss, activation_derivative)]
 
@@ -98,11 +98,12 @@ class Network:
             for j in range(len(layer['node_weights'])):
                 weight_gradients.append([prev_output[j] * l for l in layer_loss])
 
-            # 偏差梯度
+            # bias 梯度
             bias_gradients =  1 * layer_loss
             self.gradients.insert(0, {'weight_gradients': weight_gradients, 'bias_gradients': bias_gradients})
 
             # 傳遞損失到前一層
+            # bias 不用算回前一層
             new_loss = []
             for j in range(len(layer['node_weights'])):
                 sum_loss = 0
