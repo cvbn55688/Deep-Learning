@@ -26,15 +26,10 @@ network1 = network.Network([
     {
         'node_weights': helper.random_weights(1, 10),
         'bias_weights': helper.random_biases_weights(10),
-        'activation': 'sigmoid'
+        'activation': 'relu'
     },
     {
-        'node_weights': helper.random_weights(10, 5),
-        'bias_weights': helper.random_biases_weights(5),
-        'activation': 'sigmoid'
-    },
-    {
-        'node_weights': helper.random_weights(5, 1),
+        'node_weights': helper.random_weights(10, 1),
         'bias_weights': helper.random_biases_weights(1),
         'activation': 'linear'
     }
@@ -52,7 +47,7 @@ print(f"avg error: {mae_loss} lbs")
 
 
 learning_rate = 0.001
-epochs = 20
+epochs = 30
 
 for i in range(epochs):
     for input, expect in zip(inputs, expects):
